@@ -1,0 +1,277 @@
+## Read in data, and clean up N/A values
+ST <- read.csv("sharktank.csv")
+ST$Ask.Valuation <- gsub("#DIV/0!", "", ST$Ask.Valuation)
+ST$Deal.Valuation <- gsub("#DIV/0!", "", ST$Deal.Valuation)
+
+## Take a subset of only the observations that have Ask information
+## One data frame is for the bar charting and another for clustering
+ST.small <- subset(ST, Ask.Amount >= 1)
+ST.small2 <- subset(ST, Ask.Amount >= 1)
+
+## Creating a new variable with the offering shark's names
+ST.small$Barbara.Corcoran <- gsub("1", "Barbara", ST.small$Barbara.Corcoran)
+ST.small$Mark.Cuban <- gsub("1", "Mark", ST.small$Mark.Cuban)
+ST.small$Lori.Greiner <- gsub("1", "Lori", ST.small$Lori.Greiner)
+ST.small$Robert.Herjavec <- gsub("1", "Robert", ST.small$Robert.Herjavec)
+ST.small$Daymond.John <- gsub("1", "Daymond", ST.small$Daymond.John)
+ST.small$Kevin.Oleary <- gsub("1", "Kevin", ST.small$Kevin.Oleary)
+Shark.Col <- 
+  ST.small$Sharks <- paste(ST.small$Barbara.Corcoran, ST.small$Mark.Cuban,
+                           ST.small$Lori.Greiner, ST.small$Robert.Herjavec,
+                           ST.small$Daymond.John, ST.small$Kevin.Oleary,
+                           sep = " " )
+
+
+## Create subset of all 6 most common sharks for all pitches
+BC <- subset(ST, Barbara.Corcoran == 1)
+BC$Sharks <- "Barbara"
+MC <- subset(ST, Mark.Cuban == 1)
+MC$Sharks <- "Mark"
+LG <- subset(ST, Lori.Greiner == 1)
+LG$Sharks <- "Lori"
+RH <- subset(ST, Robert.Herjavec == 1)
+RH$Sharks <- "Robert"
+DJ <- subset(ST, Daymond.John == 1)
+DJ$Sharks <- "Daymond"
+KO <- subset(ST, Kevin.Oleary == 1)
+KO$Sharks <- "Kevin"
+BC.s <- subset(ST.small, Barbara.Corcoran == "Barbara")
+MC.s <- subset(ST.small, Mark.Cuban == "Mark")
+LG.s <- subset(ST.small, Lori.Greiner == "Lori")
+RH.s <- subset(ST.small, Robert.Herjavec == "Robert")
+DJ.s <- subset(ST.small, Daymond.John == "Daymond")
+KO.s <- subset(ST.small, Kevin.Oleary == "Kevin")
+
+########## Creat a dataset that counts each shark offer as its own occurance
+ST.big <- bind_rows(BC, MC, LG, RH, DJ, KO)
+
+############ Subset of pitches that only received deals from 2 or less sharks
+ST.smallsharks<- subset(ST.small, X.ofSharks <=2)
+
+
+## Bar chars of Industry v Entrepreneur Gender
+BC.bar <- ggplot(data=BC,aes( x=Industry, fill=Entrepreneur_Gender)) + 
+  geom_bar()+ 
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  scale_y_continuous("",limits=c(0,20))+
+  xlab("")+
+  theme(legend.position="none")
+MC.bar <- ggplot(data=MC,aes( x=Industry, fill=Entrepreneur_Gender)) + 
+  geom_bar()+ 
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  scale_y_continuous("",limits=c(0,20))+
+  xlab("")+
+  theme(legend.position="none")
+LG.bar <- ggplot(data=LG,aes( x=Industry, fill=Entrepreneur_Gender)) + 
+  geom_bar()+ 
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  scale_y_continuous("",limits=c(0,20))+
+  xlab("")+
+  theme(legend.position="none")
+RH.bar <- ggplot(data=RH,aes( x=Industry, fill=Entrepreneur_Gender)) + 
+  geom_bar()+
+  theme(axis.text.x =element_text(angle=90,hjust=1))+
+  scale_y_continuous("",limits=c(0,20))+
+  xlab("")+
+  theme(legend.position="none")
+DJ.bar <- ggplot(data=DJ,aes( x=Industry, fill=Entrepreneur_Gender)) + 
+  geom_bar()+ 
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  scale_y_continuous("",limits=c(0,20))+
+  xlab("")+
+  theme(legend.position="none")
+KO.bar <- ggplot(data=KO,aes( x=Industry, fill=Entrepreneur_Gender)) + 
+  geom_bar()+ 
+  theme(axis.text.x =  element_text(angle=90,hjust=1))+
+  scale_y_continuous("",limits=c(0,20))+
+  xlab("")+
+  theme(legend.position="none")
+grid.arrange(BC.bar, MC.bar, LG.bar, RH.bar, DJ.bar, KO.bar,
+             ncol = 3)
+
+
+## Scatter plots of Industry v Asking Equity
+Industry <- unique(ST.small$Industry)
+BC.point <- ggplot(data=BC.s,aes( x=Industry,
+                                  as.numeric(as.character(Ask.Equity)))) + 
+  geom_point(aes(shape=X.ofSharks), size=5)+
+  scale_shape_identity()+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  coord_cartesian(ylim=c(0,.6))+
+  scale_y_discrete("$ Asking", breaks = c(0,1,0.1))+
+  scale_x_discrete("", labels = Industry)+
+  theme(legend.position="none")
+MC.point <- ggplot(data=MC.s,aes( x=Industry, 
+                                  as.numeric(as.character(Ask.Equity)))) + 
+  geom_point(aes(shape=X.ofSharks), size=5)+
+  scale_shape_identity()+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  coord_cartesian(ylim=c(0,.6))+
+  scale_y_discrete("$ Asking", breaks = c(0,1,0.1))+
+  scale_x_discrete("", labels = Industry)+
+  xlab("")+
+  theme(legend.position="none")
+LG.point <- ggplot(data=LG.s,aes( x=Industry, 
+                                  as.numeric(as.character(Ask.Equity)))) + 
+  geom_point(aes(shape=X.ofSharks), size=5)+
+  scale_shape_identity()+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  coord_cartesian(ylim=c(0,.6))+
+  scale_y_discrete("$ Asking", breaks = c(0,1,0.1))+
+  scale_x_discrete("", labels = Industry)+
+  xlab("")+
+  theme(legend.position="none")
+RH.point <- ggplot(data=RH.s,aes( x=Industry, 
+                                  as.numeric(as.character(Ask.Equity)))) + 
+  geom_point(aes(shape=X.ofSharks), size=5)+
+  scale_shape_identity()+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  coord_cartesian(ylim=c(0,.6))+
+  scale_y_discrete("$ Asking", breaks = c(0,1,0.1))+
+  scale_x_discrete("", labels = Industry)+
+  xlab("")+
+  theme(legend.position="none")
+DJ.point <- ggplot(data=DJ.s,aes( x=Industry, 
+                                  as.numeric(as.character(Ask.Equity)))) + 
+  geom_point(aes(shape=X.ofSharks), size=5)+
+  scale_shape_identity()+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  coord_cartesian(ylim=c(0,.6))+
+  scale_y_discrete("$ Asking", breaks = c(0,1,0.1))+
+  scale_x_discrete("", labels = Industry)+
+  xlab("")+
+  theme(legend.position="none")
+KO.point <- ggplot(data=KO.s,aes( x=Industry, 
+                                  as.numeric(as.character(Ask.Equity)))) + 
+  geom_point(aes(shape=X.ofSharks), size=5)+
+  scale_shape_identity()+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  coord_cartesian(ylim=c(0,.6))+
+  scale_y_discrete("$ Asking", breaks = c(0,1,0.1))+
+  scale_x_discrete("", labels = Industry)+
+  xlab("")+
+  theme(legend.position="none")
+grid.arrange(BC.point, MC.point, LG.point, RH.point,
+             DJ.point, KO.point, ncol = 3)
+
+
+
+## Bar charts of Industry v. Deal and Gender
+Deal.Ind <- ggplot(data=ST.small,
+  aes( x=Industry, fill = Deal))+ 
+  geom_bar()+
+  theme(axis.text.x =  element_text(angle=90,hjust=1))+
+  ylab("")
+Gender.Ind <- ggplot(data=ST.small,
+                   aes( x=Industry, fill = Entrepreneur_Gender))+ 
+  geom_bar()+
+  theme(axis.text.x =  element_text(angle=90,hjust=1))+
+  ylab("")
+grid.arrange(Deal.Ind, Gender.Ind, ncol = 2)
+
+
+## Rearranging data for clustering, by changing values to 1 or 0
+ST.small2$Male <- ST.small2$Entrepreneur_Gender
+ST.small2$Female <- ST.small2$Entrepreneur_Gender
+ST.small2$Male <- gsub("Female", "0", ST.small2$Male)
+ST.small2$Female <- gsub("Male", "0", ST.small2$Female)
+ST.small2$Male <- gsub("Male", "1", ST.small2$Male)
+ST.small2$Female <- gsub("Female", "1", ST.small2$Female)
+ST.small2$Male <- gsub("Mixed Team", "1", ST.small2$Male)
+ST.small2$Female <- gsub("Mixed Team", "1", ST.small2$Female)
+
+ST.small2$Healthcare <- ST.small2$Industry
+ST.small2$Healthcare <- gsub("Healthcare", "1", ST.small2$Healthcare)
+ST.small2$Healthcare <- as.numeric(ST.small2$Healthcare == 1)  
+  
+ST.small2$Food_Bev <- ST.small2$Industry
+ST.small2$Food_Bev <- gsub("Food and Beverage", "1", ST.small2$Food_Bev)
+ST.small2$Food_Bev <- as.numeric(ST.small2$Food_Bev == 1)  
+
+ST.small2$Business <- ST.small2$Industry
+ST.small2$Business <- gsub("Business Services", "1", ST.small2$Business)
+ST.small2$Business <- as.numeric(ST.small2$Business == 1) 
+
+ST.small2$Lifestyle <- ST.small2$Industry
+ST.small2$Lifestyle <- gsub("Lifestyle / Home", "1", ST.small2$Lifestyle)
+ST.small2$Lifestyle <- as.numeric(ST.small2$Lifestyle == 1) 
+
+ST.small2$Other <- ST.small2$Industry
+ST.small2$Other <- gsub("Uncertain / Other", "1", ST.small2$Other)
+ST.small2$Other <- as.numeric(ST.small2$Other == 1) 
+
+ST.small2$Education <- ST.small2$Industry
+ST.small2$Education <- gsub("Children / Education", "1", ST.small2$Education)
+ST.small2$Education <- as.numeric(ST.small2$Education == 1) 
+
+ST.small2$Consumer <- ST.small2$Industry
+ST.small2$Consumer <- gsub("Consumer Products", "1", ST.small2$Consumer)
+ST.small2$Consumer <- as.numeric(ST.small2$Consumer == 1) 
+
+ST.small2$Fashion <- ST.small2$Industry
+ST.small2$Fashion <- gsub("Fashion / Beauty", "1", ST.small2$Fashion)
+ST.small2$Fashion <- as.numeric(ST.small2$Fashion == 1) 
+
+ST.small2$Media <- ST.small2$Industry
+ST.small2$Media <- gsub("Media / Entertainment", "1", ST.small2$Media)
+ST.small2$Media <- as.numeric(ST.small2$Media == 1) 
+
+ST.small2$Software <- ST.small2$Industry
+ST.small2$Software <- gsub("Software / Tech", "1", ST.small2$Software)
+ST.small2$Software <- as.numeric(ST.small2$Software == 1) 
+
+ST.small2$Fitness <- ST.small2$Industry
+ST.small2$Fitness <- gsub("Fitness / Sports", "1", ST.small2$Fitness)
+ST.small2$Fitness <- as.numeric(ST.small2$Fitness == 1) 
+
+ST.small2$Pets <- ST.small2$Industry
+ST.small2$Pets <- gsub("Pet Products", "1", ST.small2$Pets)
+ST.small2$Pets <- as.numeric(ST.small2$Pets == 1)
+
+ST.small2$CleanTech <- ST.small2$Industry
+ST.small2$CleanTech <- gsub("Green / CleanTech", "1", ST.small2$CleanTech)
+ST.small2$CleanTech <- as.numeric(ST.small2$CleanTech == 1)
+
+##Flipped the table to fit clustering functions
+ST.small.flip <- ST.small2[22:36]
+## Changed to 14 to remove royalty
+ST.small.flip2 <- ST.small2[14:19]
+ST.small.flip3 <- ST.small2[3]
+ST.small.flip4 <- ST.small2[8]
+ST.flip.full <- bind_cols(ST.small.flip, ST.small.flip4, ST.small.flip2,
+                          ST.small.flip3)
+
+## Calculating distance for clustering
+distances <-dist(ST.flip.full[1:17], method="euclidean")
+
+## Create and plot Dendrogram, select 6 clusters, also make NA values 0
+is.na(ST.flip.full) <- sapply(ST.flip.full, is.infinite)
+ST.flip.full[is.na(ST.flip.full)] <- 0
+ST.flip.full[is.nan(ST.flip.full)] <- 0
+CL_ST <- hclust(distances, method= "ward.D")
+plot(CL_ST)
+## Tried with 4 and 6 clusters
+clusters <- cutree(CL_ST, k=4)
+
+## Change all variables other than Company to numeric for summarizing and creat 
+## variable to label clusters
+ST.flip.full$group <- clusters
+ST.flip.full$Male <- as.numeric(ST.flip.full$Male)
+ST.flip.full$Female <- as.numeric(ST.flip.full$Female)
+ST.flip.full$Ask.Equity <- as.numeric(ST.flip.full$Ask.Equity)
+ST.flip.full$Barbara.Corcoran <- as.numeric(ST.flip.full$Barbara.Corcoran)
+ST.flip.full$Mark.Cuban <- as.numeric(ST.flip.full$Mark.Cuban)
+ST.flip.full$Lori.Greiner <- as.numeric(ST.flip.full$Lori.Greiner)
+ST.flip.full$Robert.Herjavec <- as.numeric(ST.flip.full$Robert.Herjavec)
+ST.flip.full$Daymond.John <- as.numeric(ST.flip.full$Daymond.John)
+ST.flip.full$Kevin.Oleary <- as.numeric(ST.flip.full$Kevin.Oleary)
+is.na(ST.flip.full) <- sapply(ST.flip.full, is.infinite)
+ST.flip.full[is.na(ST.flip.full)] <- 0
+ST.flip.full[is.nan(ST.flip.full)] <- 0
+
+
+## Create tables showing breakdown of clusters
+ST.clust <- ST.flip.full %>% 
+  group_by(group) %>%  summarise_each(funs(mean))
+ST.clust2 <- ST.flip.full %>% 
+  group_by(group) %>%  summarise(n=n())
